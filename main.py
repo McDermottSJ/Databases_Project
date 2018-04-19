@@ -2,22 +2,16 @@ from flask import Flask
 from flask import render_template
 app = Flask(__name__)
 
-import PyMySQL
+import records
 
-cnx={'host': 'aa1t78pyyq2oz9v.c4pbzdfasekc.us-east-1.rds.amazonaws.com', 'username': 'admin', 'password': 'FlaskTask2018', 'db': 'ebdb'}
-
-db = MySQLdb.connect(cnx['host'],cnx['username'],cnx['password'], cnx['db'])
+db = records.Database('mysql://admin:FlaskTask2018@aa1t78pyyq2oz9v.c4pbzdfasekc.us-east-1.rds.amazonaws.com:3306/ebdb')
 
 @app.route('/')
 def hello_world():
-	cursor = db.cursor()
-	sql  = """INSERT INTO test VALUES (4, 'asd')"""
-	try:
-		cursor.execute(sql)
-		db.commit()
-	except:
-		db.rollback()
-	db.close()
+	rows = db.query('select * from test')
+	for r in rows:
+		print(r.one, r.two)
+	
 
 	return render_template('main.html')
     
