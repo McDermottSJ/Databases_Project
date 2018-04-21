@@ -1,0 +1,15 @@
+{% extends "index.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+{{ super() }}
+<style type="text/css">
+.important { color: #336699; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="alert alert-danger">
+    <strong>Error!</strong> You messed up your query, and now I am sad.
+  </div>
+</div>
+{% endblock %}
