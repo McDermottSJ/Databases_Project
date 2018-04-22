@@ -140,3 +140,21 @@ def delItem():
 	db.query('delete from menu_items where item_name = "{}"'.format(itemName))
 	return render_template('menu.html', data=getMenuItems())
 
+
+@app.route('/management')
+def orders():
+	return render_template('orders.html', orderList=getOrders())
+def getOrders():
+	orderList=db.query('select distinct last_name, order_number from orders natural join employee')
+	return orderList.as_dict()
+@app.route('/management', methods=['POST'])
+def orderDetails():
+	orderNum = request.form.get('orderNum')
+	managerNameQ = db.query('select last_name from orders natural join employee where order_number = {}'.format(orderNum)).as_dict()[0]['last_name']
+	return render_template('orders.html', orderList=getOrders(), orderInfo=getOrderDetails(orderNum), orderID= orderNum, managerName= managerNameQ)
+	
+def getOrderDetails(orderNum):
+	orderInfo = db.query('select stock_name, reorder_id from orders natural join employee natural join inventory where order_number = {}'.format(orderNum))
+	return orderInfo.as_dict()
+	
+
