@@ -1,0 +1,49 @@
+{% extends "index.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+{{ super() }}
+<style type="text/css">
+    .important { color: #336699; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="outline">
+        <h1>Menu</h1>
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Item Name</th>
+                <th scope="col">Price</th>
+            </tr>
+            </thead>
+            {% for item in data %}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <td class="item_name">{{ item.item_name}}</td>
+                <td class="price">{{ item.price }}</td>
+
+            {% endfor %}
+        </table>
+
+        <h2>Add Menu Item</h2>
+        <form action="{{  url_for('subItem') }}", method="post">
+            <label>Item Name</label>
+            <input type="text" class="form-control" name="nameSubField">
+            <label>Item Price</label>
+            <input type="text" class="form-control" name="priceSubField">
+            <button type="submit" class="btn btn-primary">Send </button>
+        </form>
+
+        <h2>Remove Menu Item</h2>
+        <form action="{{  url_for('delItem') }}", method="post">
+            <label>Item Name</label>
+            <input type="text" class="form-control" name="nameDelField">
+            <button type="submit" class="btn btn-primary">Send </button>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}
