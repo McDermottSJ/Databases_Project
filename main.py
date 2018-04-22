@@ -17,6 +17,13 @@ def home():
 def sales():
     return render_template('sales.html')
 
+@app.route('/employee',)
+def employee():
+    employees = get_employees()
+    servers = get_servers()
+    managers = get_managers() 
+    return render_template('employee.html', employees=employees, managers=managers, servers=servers)
+
 @app.route('/lookup', methods=['GET', 'POST'])
 def lookup():
     if request.method == 'POST':
@@ -53,10 +60,21 @@ def search():
         else:
             return render_template('sales.html', error=True)
 
+def get_employees():
+    employees = db.query('SELECT * FROM employee WHERE employee_id NOT IN (SELECT * FROM manager) AND employee_id NOT IN (SELECT * FROM server) AND end_date IS NULL')
+    return employees.as_dict()
+
+def get_servers():
+    servers = db.query('SELECT * FROM server NATURAL JOIN employee')
+    return servers.as_dict()
+
+def get_managers():
+    managers = db.query('SELECT * FROM manager NATURAL JOIN employee')
+    return managers.as_dict()
+
 def get_items(trans_num):
     items = db.query('SELECT *, quantity * price as "sub_total" FROM (select item_name, quantity FROM contains WHERE transaction_number={}) as t1 NATURAL JOIN menu_items'.format(trans_num))
     return items.as_dict()
-
 
 def get_server(trans_num):
     name = db.query('SELECT employee_id, concat (first_name, " ", last_name) as server_name FROM employee NATURAL JOIN ticket WHERE transaction_number={}'.format(trans_num))
