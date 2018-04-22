@@ -51,7 +51,18 @@ def getEquip():
 def getOverdue():
 	overdue = db.query('select * from equipment where datediff(sysdate(), last_maintenanced) >= maintenance_frequency')
 	return overdue.as_dict()
+
+@app.route('/equipment', methods=['POST'])
 def reqMaint():
-	return render_template('Equipment.html', equip=getEquip(), overdue=getOverdue(), mech=getMech())
+	serialnum = request.form.get('serialNum')
+	return render_template('Equipment.html', equip=getEquip(), overdue=getOverdue(), mech=getMech(serialnum))
 def getMech(serial):
-	mech = db.query('select employee_id, concat(first_name, ' ', last_name) as name from employee natural join maintains where serial_num = {}'.format(serial))
+	mech = db.query('select employee_id, concat(first_name, " ", last_name) as name from employee natural join maintains where serial_num = {}'.format(serial))
+	return mech.as_dict()
+
+@app.route('/equipment', methods=['POST'])
+def subMaint():
+	serialnum = request.form.get('serialNum')
+	db.query('update equipment set last_maintenanced = date(sysdate()) where serial_num = {}'.format(serialnum))
+	return render_template('Equipment.html', equip=getEquip(), overdue=getOverdue())
+
