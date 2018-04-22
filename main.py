@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, url_for
 from flask import render_template, redirect, request
 import records
 app = Flask(__name__)
@@ -17,12 +17,12 @@ def home():
 def sales():
     return render_template('sales.html')
 
-@app.route('/employee',)
+@app.route('/employee')
 def employee():
     employees = get_employees()
     servers = get_servers()
     managers = get_managers() 
-    return render_template('employee.html', employees=employees, managers=managers, servers=servers)
+    return render_template('employee.html', employees=employees, managers=managers, servers=servers, error=request.args.get('error'))
 
 @app.route('/lookup', methods=['GET', 'POST'])
 def lookup():
@@ -60,21 +60,47 @@ def search():
         else:
             return render_template('sales.html', error=True)
 
+@app.route('/hire', methods=['POST'])
+def hire():
+    return
+
+@app.route('/terminate', methods=['POST'])
+def terminate():
+    if request.method == 'POST':
+        employee_id = request.form.get('employeeId')
+        position = request.form.get('position')
+        if get_employee_by_id(employee_id):
+            terminate_empoloyee(employee_id)
+            return redirect('/employee')
+        else: 
+            return redirect(url_for('employee', error=True))
+
+def terminate_empoloyee(employee_id):
+    db.query('UPDATE employee SET end_date=sysdate() WHERE employee_id = {}'.format(employee_id))
+    return
+
 def get_employees():
     employees = db.query('SELECT * FROM employee WHERE employee_id NOT IN (SELECT * FROM manager) AND employee_id NOT IN (SELECT * FROM server) AND end_date IS NULL')
     return employees.as_dict()
 
 def get_servers():
-    servers = db.query('SELECT * FROM server NATURAL JOIN employee')
+    servers = db.query('SELECT * FROM server NATURAL JOIN employee WHERE end_date IS NULL')
     return servers.as_dict()
 
 def get_managers():
-    managers = db.query('SELECT * FROM manager NATURAL JOIN employee')
+    managers = db.query('SELECT * FROM manager NATURAL JOIN employee WHERE end_date IS NULL')
     return managers.as_dict()
 
 def get_items(trans_num):
     items = db.query('SELECT *, quantity * price as "sub_total" FROM (select item_name, quantity FROM contains WHERE transaction_number={}) as t1 NATURAL JOIN menu_items'.format(trans_num))
     return items.as_dict()
+
+def get_employee_by_id(employee_id):
+    employee = db.query('SELECT * FROM employee WHERE employee_id={}'.format(employee_id))
+    if employee.as_dict():
+        return True
+    else:
+        return False
 
 def get_server(trans_num):
     name = db.query('SELECT employee_id, concat (first_name, " ", last_name) as server_name FROM employee NATURAL JOIN ticket WHERE transaction_number={}'.format(trans_num))
