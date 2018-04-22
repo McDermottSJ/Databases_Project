@@ -9,25 +9,39 @@
 {% block content %}
 <div class="container">
   <div class="outline">
-    <form action="{{  url_for('sales') }}", method="post"
-    <div class="form-row"
-    <div class="form-group">
-      <label for="transactionNumber">Transaction Number</label>
-      <input type="text" class="form-control" name="transactionNumber" placeholder="1234567890">
-    </div>
-  <div class="form-row">
-    <div class="form-group">
-      <label for="beforeDate">Before Date</label>
-      <input type="date" class="form-control" name="beforeDate">
-    </div>
-    <div class="form-group">
-      <label for="afterDate">After Date</label>
-      <input type="date" class="form-control" name="endDate">
-    </div>
+    <form action="{{  url_for('lookup') }}", method="post">
+      <div class="form-row">
+        <div class="form-group">
+          <div class="col">
+            <label for="transactionNumber">Transaction Number</label>
+            <input type="text" class="form-control" name="transactionNumber" placeholder="">
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Send </button>
+    </form>
   </div>
-  <button type="submit" class="btn btn-primary">Send </button>
-</form>
 </div>
+<div class="container">
+  <div class="outline">
+    <form action="{{  url_for('search') }}" method="post">
+      <div class="form-row">
+        <div class="form-group">
+          <div class="col">
+            <label for="beforeDate">Before Date</label>
+            <input type="date" class="form-control" name="beforeDate">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col">
+            <label for="afterDate">After Date</label>
+            <input type="date" class="form-control" name="endDate">
+          </div>
+        </div>
+      </div>
+      <button type="submit" name="btn btn-primary">Search</button>
+    </form>
+  </div>
 </div>
 {% if data %}
 <div class="container">
@@ -49,6 +63,54 @@
       </tr>
       {% endfor %}
     </table>
+  </div>
+{% endif %}
+{% if ticket %}
+<div class="container">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Transaction #</th>
+        <th scope="col"> Employee ID</th>
+        <th scope="col">Server Name</th>
+        <th scope="col">Date</th>
+      </tr>
+    </thead>
+    <th scope="row"> {{ ticket.transaction_number  }}</th>
+    <th scope="row"> {{ ticket.employee_id }}</th>
+    <th scope="row"> {{ ticket.server_name }}</th>
+    <th scope="row"> {{ ticket.date }}</th>
+  </table>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Item</th>
+        <th scope="col">Quantity</th>
+        <th scope="col">Sub-Total</th>
+      </tr>
+    </thead>
+    {% for item in ticket['items'] %}
+    <tr>
+      <th scope="row">{{ loop.index }}</th>
+      <td>{{ item.item_name}}</td>
+      <td>{{ item.quantity }}</td>
+      <td>{{ item.sub_total}}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+      <th scope="row"> Total</th>
+      <td></td>
+      <td></td>
+      <td> {{ ticket.sub_total}}</td>
+    </tr>
+  </table>
+</div>
+{% endif %}
+{% if error %}
+  <div class="container">
+    <div class="alert alert-danger">
+      <strong>Error!</strong> Your query did not match any results :[
+    </div>
   </div>
 {% endif %}
 {% endblock %}
