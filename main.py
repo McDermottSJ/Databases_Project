@@ -41,3 +41,17 @@ def transaction_date_search(begin_dt, end_dt):
     print(data)
     return data.as_dict()
 
+@app.route('/equipment')
+def equipment():
+	return render_template('Equipment.html', equip=getEquip(), overdue=getOverdue())
+
+def getEquip():
+	equip = db.query('SELECT * FROM equipment')
+	return equip.as_dict()
+def getOverdue():
+	overdue = db.query('select * from equipment where datediff(sysdate(), last_maintenanced) >= maintenance_frequency')
+	return overdue.as_dict()
+def reqMaint():
+	return render_template('Equipment.html', equip=getEquip(), overdue=getOverdue(), mech=getMech())
+def getMech(serial):
+	mech = db.query('select employee_id, concat(first_name, ' ', last_name) as name from employee natural join maintains where serial_num = {}'.format(serial))
