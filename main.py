@@ -118,3 +118,25 @@ def subMaint():
 	db.query('update equipment set last_maintenanced = date(sysdate()) where serial_num = {}'.format(serialnum))
 	return render_template('Equipment.html', equip=getEquip(), overdue=getOverdue())
 
+@app.route('/menu')
+def menu():
+	return render_template('menu.html', data=getMenuItems())
+def getMenuItems():
+	data = db.query('select * from menu_items')
+	return data.as_dict()
+@app.route('/menu/sub', methods=['POST'])
+def subItem():
+	itemName = request.form.get('nameSubField')
+	itemPrice = request.form.get('priceSubField')
+	if itemName and itemPrice: 
+		db.query('insert into menu_items values ("{}", {})'.format(itemName, itemPrice))
+		return render_template('menu.html', data=getMenuItems())
+	else:
+		return render_template('menu.html', data=getMenuItems(), error=True)
+
+@app.route('/menu/del', methods=['POST'])
+def delItem():
+	itemName= request.form.get('nameDelField')
+	db.query('delete from menu_items where item_name = "{}"'.format(itemName))
+	return render_template('menu.html', data=getMenuItems())
+
