@@ -1,0 +1,62 @@
+{% extends "index.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+{{ super() }}
+<style type="text/css">
+    .important { color: #336699; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="outline">
+        <h1>Orders</h1>
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Manager Name</th>
+                <th scope="col">Order Number</th>
+            </tr>
+            </thead>
+            {% for order in orderList %}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <td class="name">{{ order.last_name}}</td>
+                <td class="order">{{ order.order_number}}</td>
+
+                {% endfor %}
+        </table>
+
+        <h1>Order Details</h1>
+        <form action="{{  url_for('orderDetails') }}", method="post">
+            <label>Order Number</label>
+            <input type="number" class="form-control" name="orderNum">
+            <button type="submit" class="btn btn-primary">Send </button>
+        </form>
+
+        {% if orderInfo %}
+        <h2>{{ managerName }} ; {{ orderID }}</h2>
+        <div class="container">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Item Name</th>
+                    <th scope="col">Item Reorder ID</th>
+                </tr>
+                </thead>
+                {% for item in orderInfo %}
+                <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    <td class="item_name">{{ item.stock_name}}</td>
+                    <td class="item_id">{{ item.reorder_id}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

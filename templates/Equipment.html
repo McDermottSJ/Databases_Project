@@ -58,7 +58,7 @@
         <h2>Request Maintenance</h2>
         <form action="{{  url_for('reqMaint') }}", method="post">
             <label>Serial Number</label>
-            <input type="text" class="form-control" name="serialNum">
+            <input type="number" class="form-control" name="serialNum">
             <button type="submit" class="btn btn-primary">Send </button>
         </form>
 
@@ -87,12 +87,18 @@
         <h2>Submit Maintenance</h2>
         <form action="{{  url_for('subMaint') }}", method="post">
             <label>Serial Number</label>
-            <input type="text" class="form-control" name="serialNumSub">
+            <input type="number" class="form-control" name="serialNumSub">
             <button type="submit" class="btn btn-primary">Send </button>
         </form>
 
 
     </div>
 </div>
-
+{% if error %}
+<div class="container">
+    <div class="alert alert-danger">
+        <strong>Error!</strong> Your query did not match any results :[
+    </div>
+</div>
+{% endif %}
 {% endblock %}

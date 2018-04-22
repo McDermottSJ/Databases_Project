@@ -144,3 +144,59 @@ def subMaint():
 	db.query('update equipment set last_maintenanced = date(sysdate()) where serial_num = {}'.format(serialnum))
 	return render_template('Equipment.html', equip=getEquip(), overdue=getOverdue())
 
+@app.route('/menu')
+def menu():
+	return render_template('menu.html', data=getMenuItems())
+def getMenuItems():
+	data = db.query('select * from menu_items')
+	return data.as_dict()
+@app.route('/menu/sub', methods=['POST'])
+def subItem():
+	itemName = request.form.get('nameSubField')
+	itemPrice = request.form.get('priceSubField')
+	if itemName and itemPrice: 
+		db.query('insert into menu_items values ("{}", {})'.format(itemName, itemPrice))
+		return render_template('menu.html', data=getMenuItems())
+	else:
+		return render_template('menu.html', data=getMenuItems(), error=True)
+
+@app.route('/menu/del', methods=['POST'])
+def delItem():
+	itemName= request.form.get('nameDelField')
+	db.query('delete from menu_items where item_name = "{}"'.format(itemName))
+	return render_template('menu.html', data=getMenuItems())
+
+
+@app.route('/orders')
+def orders():
+	return render_template('orders.html', orderList=getOrders())
+def getOrders():
+	orderList=db.query('select distinct last_name, order_number from orders natural join employee')
+	return orderList.as_dict()
+@app.route('/orders', methods=['POST'])
+def orderDetails():
+	orderNum = request.form.get('orderNum')
+	managerNameQ = db.query('select last_name from orders natural join employee where order_number = {}'.format(orderNum)).as_dict()
+	if managerNameQ:	
+		return render_template('orders.html', orderList=getOrders(), orderInfo=getOrderDetails(orderNum), orderID= orderNum, managerName= managerNameQ[0]['last_name'])
+	else:
+		return render_template('orders.html', orderList=getOrders())
+def getOrderDetails(orderNum):
+	orderInfo = db.query('select stock_name, reorder_id from orders natural join employee natural join inventory where order_number = {}'.format(orderNum))
+	return orderInfo.as_dict()
+
+
+@app.route('/inventory')
+def inventory():
+	return render_template('Inventory.html', invList=getInvList())
+def getInvList():
+	data = db.query('select * from inventory natural join supplied_by natural join vendor')
+	return data.as_dict()
+@app.route('/inventory', methods=['POST'])
+def vendDetails():
+	vendID = request.form.get('vendorID')
+	return render_template('Inventory.html', invList=getInvList(), vendor=getVendDetails(vendID))
+def getVendDetails(vendID):
+	data = db.query('select * from vendor where vendor_id = {}'.format(vendID))
+	return data.as_dict()
+
