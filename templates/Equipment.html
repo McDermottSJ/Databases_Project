@@ -1,0 +1,90 @@
+{% extends "index.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+{{ super() }}
+<style type="text/css">
+    .important { color: #336699; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="outline">
+        <h2>All Equipment</h2>
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Serial #</th>
+                <th scope="col">Equipment Name</th>
+                <th scope="col">Last Serviced</th>
+                <th scope="col">Maintenance Frequency</th>
+            </tr>
+            </thead>
+            {% for this in equip %}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <td class="serial_num">{{ this.serial_num}}</td>
+                <td class="equip_name">{{ this.equip_name }}</td>
+                <td class='last_maint'>{{ this.last_maintenanced}}</td>
+                <td class='maint_freq'>{{ this.maintenance_frequency}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h2>Over due for maintenance!</h2>
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Serial #</th>
+                <th scope="col">Equipment Name</th>
+                <th scope="col">Last Serviced</th>
+                <th scope="col">Maintenance Frequency</th>
+            </tr>
+            </thead>
+            {% for this in overdue %}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <td class="serial_num">{{ this.serial_num}}</td>
+                <td class="equip_name">{{ this.equip_name }}</td>
+                <td class='last_maint'>{{ this.last_maintenanced}}</td>
+                <td class='maint_freq'>{{ this.maintenance_frequency}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h2>Request Maintenance</h2>
+        <form action="{{  url_for('reqMaint') }}", method="post">
+            <label>Serial Number</label>
+            <input type="text" class="form-control" name="serialNum">
+            <button type="submit" class="btn btn-primary">Send </button>
+        </form>
+
+        {% if mech %}
+        <div class="container">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Employee Name</th>
+                    <th scope="col">Employee ID</th>
+                </tr>
+                </thead>
+                {% for emp in mech %}
+                <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    <td class="emp_id">{{ emp.employee_id}}</td>
+                    <td class="emp_name">{{ emp.name }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+
+
+
+    </div>
+</div>
+
+{% endblock %}
