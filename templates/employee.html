@@ -1,0 +1,96 @@
+{% extends "index.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+{{ super() }}
+<style type="text/css">
+    .important { color: #336699; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="outline">
+        <h2>Employees</h2>
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Employee #</th>
+                <th scope="col">Last Name</th>
+                <th scope="col">First Name</th>
+                <th scope="col">Phone #</th>
+                <th scope="col">Start Date</th>
+                <th scope="col">End Date</th>
+                <th scope="col">Houlry Pay</th>
+            </tr>
+            </thead>
+            {% for employee in employees %}
+            <tr>
+                <th>{{ loop.index }}</th>
+                <td>{{ employee.employee_id}}</td>
+                <td>{{ employee.last_name }}</td>
+                <td>{{ employee.first_name }}</td>
+                <td>{{ employee.phone }}</td>
+                <td>{{ employee.start_date }}</td>
+                <td>{{ employee.end_date  }}</td>
+                <td>{{ employee.hourly_pay }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <h2>Servers</h2>
+        <table class="table">
+            <thead>
+              <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Employee #</th>
+                  <th scope="col">Last Name</th>
+                  <th scope="col">First Name</th>
+                  <th scope="col">Phone #</th>
+                  <th scope="col">Start Date</th>
+                  <th scope="col">End Date</th>
+                  <th scope="col">Houlry Pay</th>
+              </tr>
+            </thead>
+            {% for server in servers %}
+              <tr>
+                  <th>{{ loop.index }}</th>
+                  <td>{{ server.employee_id}}</td>
+                  <td>{{ server.last_name }}</td>
+                  <td>{{ server.first_name }}</td>
+                  <td>{{ server.phone }}</td>
+                  <td>{{ server.start_date }}</td>
+                  <td>{{ server.end_date  }}</td>
+                  <td>{{ server.hourly_pay }}</td>
+              </tr>
+            {% endfor %}
+        </table>
+        <h2>Managers</h2>
+            <table class="table">
+                <thead>
+                  <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Employee #</th>
+                      <th scope="col">Last Name</th>
+                      <th scope="col">First Name</th>
+                      <th scope="col">Phone #</th>
+                      <th scope="col">Start Date</th>
+                      <th scope="col">End Date</th>
+                      <th scope="col">Houlry Pay</th>
+                  </tr>
+                </thead>
+                {% for manager in managers %}
+                  <tr>
+                      <th>{{ loop.index }}</th>
+                      <td>{{ manager.employee_id}}</td>
+                      <td>{{ manager.last_name }}</td>
+                      <td>{{ manager.first_name }}</td>
+                      <td>{{ manager.phone }}</td>
+                      <td>{{ manager.start_date }}</td>
+                      <td>{{ manager.end_date  }}</td>
+                      <td>{{ manager.hourly_pay }}</td>
+                  </tr>
+                {% endfor %}
+            </table>
+    </div>
+</div>
+
+{% endblock %}
