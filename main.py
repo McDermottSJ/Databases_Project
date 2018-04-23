@@ -1,5 +1,6 @@
 from flask import Flask, url_for
 from flask import render_template, redirect, request
+import random
 import records
 app = Flask(__name__)
 
@@ -62,18 +63,45 @@ def search():
 
 @app.route('/hire', methods=['POST'])
 def hire():
-    return
+    if request.method == 'POST':
+        employee_id = random.randint(100000,999999)
+        position = request.form.get('position')
+        pay = request.form.get('pay')
+        last_name = request.form.get('lastName')
+        first_name = request.form.get('firstName')
+        phone = request.form.get('phone')
+        add_employee(employee_id, first_name, last_name, phone, pay)
+        if position == 'server':
+            add_server(employee_id)
+        elif position == 'manager':
+            add_manager(employee_id)
+        return redirect('/employee') 
 
 @app.route('/terminate', methods=['POST'])
 def terminate():
     if request.method == 'POST':
         employee_id = request.form.get('employeeId')
         position = request.form.get('position')
-        if get_employee_by_id(employee_id):
+        if is_employee(employee_id):
             terminate_empoloyee(employee_id)
             return redirect('/employee')
         else: 
             return redirect(url_for('employee', error=True))
+
+@app.route('/equipment', methods =['POST'])
+def subMaint():
+	serialnum = request.form.get('serialNumSub')
+	db.query('update equipment set last_maintenanced = date(sysdate()) where serial_num = {}'.format(serialnum))
+	return render_template('Equipment.html', equip=getEquip(), overdue=getOverdue())
+
+@app.route('/equipment')
+def equipment():
+	return render_template('Equipment.html', equip=getEquip(), overdue=getOverdue())
+
+@app.route('/equipment/req', methods=['POST'])
+def reqMaint():
+	serialnum = request.form.get('serialNum')
+	return render_template('Equipment.html', equip=getEquip(), overdue=getOverdue(), mech=getMech(serialnum))
 
 def terminate_empoloyee(employee_id):
     db.query('UPDATE employee SET end_date=sysdate() WHERE employee_id = {}'.format(employee_id))
@@ -97,7 +125,10 @@ def get_items(trans_num):
 
 def get_employee_by_id(employee_id):
     employee = db.query('SELECT * FROM employee WHERE employee_id={}'.format(employee_id))
-    if employee.as_dict():
+    return employee.as_dict()
+
+def is_employee(employee_id):
+    if employee:
         return True
     else:
         return False
@@ -118,11 +149,6 @@ def get_date(trans_num):
     date = db.query('SELECT transaction_datetime FROM ticket WHERE transaction_number={}'.format(trans_num))
     return date.as_dict()[0]['transaction_datetime']
 
-
-@app.route('/equipment')
-def equipment():
-	return render_template('Equipment.html', equip=getEquip(), overdue=getOverdue())
-
 def getEquip():
 	equip = db.query('SELECT * FROM equipment')
 	return equip.as_dict()
@@ -130,73 +156,23 @@ def getOverdue():
 	overdue = db.query('select * from equipment where datediff(sysdate(), last_maintenanced) >= maintenance_frequency')
 	return overdue.as_dict()
 
-@app.route('/equipment/req', methods=['POST'])
-def reqMaint():
-	serialnum = request.form.get('serialNum')
-	return render_template('Equipment.html', equip=getEquip(), overdue=getOverdue(), mech=getMech(serialnum))
 def getMech(serial):
 	mech = db.query('select employee_id, concat(first_name, " ", last_name) as name from employee natural join maintains where serial_num = {}'.format(serial))
 	return mech.as_dict()
 
-@app.route('/equipment', methods =['POST'])
-def subMaint():
-	serialnum = request.form.get('serialNumSub')
-	db.query('update equipment set last_maintenanced = date(sysdate()) where serial_num = {}'.format(serialnum))
-	return render_template('Equipment.html', equip=getEquip(), overdue=getOverdue())
+def get_all_employee_ids():
+    employee_ids = db.query('SELECT employee_id FROM employee')
+    return employee_ids.as_dict()
 
-@app.route('/menu')
-def menu():
-	return render_template('menu.html', data=getMenuItems())
-def getMenuItems():
-	data = db.query('select * from menu_items')
-	return data.as_dict()
-@app.route('/menu/sub', methods=['POST'])
-def subItem():
-	itemName = request.form.get('nameSubField')
-	itemPrice = request.form.get('priceSubField')
-	if itemName and itemPrice: 
-		db.query('insert into menu_items values ("{}", {})'.format(itemName, itemPrice))
-		return render_template('menu.html', data=getMenuItems())
-	else:
-		return render_template('menu.html', data=getMenuItems(), error=True)
+def add_employee(employee_id, first_name, last_name, pay, phone):
+    all_ids = get_all_employee_ids()
+    db.query('INSERT INTO employee (employee_id, first_name, last_name, start_date, phone, hourly_pay) VALUES ({}, "{}", "{}", sysdate(), {}, "{}")'.format(employee_id, first_name, last_name, pay, phone)) 
+    return
 
-@app.route('/menu/del', methods=['POST'])
-def delItem():
-	itemName= request.form.get('nameDelField')
-	db.query('delete from menu_items where item_name = "{}"'.format(itemName))
-	return render_template('menu.html', data=getMenuItems())
+def add_server(employee_id):
+    db.query('INSERT INTO server VALUES ({})'.format(employee_id))
+    return
 
-
-@app.route('/orders')
-def orders():
-	return render_template('orders.html', orderList=getOrders())
-def getOrders():
-	orderList=db.query('select distinct last_name, order_number from orders natural join employee')
-	return orderList.as_dict()
-@app.route('/orders', methods=['POST'])
-def orderDetails():
-	orderNum = request.form.get('orderNum')
-	managerNameQ = db.query('select last_name from orders natural join employee where order_number = {}'.format(orderNum)).as_dict()
-	if managerNameQ:	
-		return render_template('orders.html', orderList=getOrders(), orderInfo=getOrderDetails(orderNum), orderID= orderNum, managerName= managerNameQ[0]['last_name'])
-	else:
-		return render_template('orders.html', orderList=getOrders())
-def getOrderDetails(orderNum):
-	orderInfo = db.query('select stock_name, reorder_id from orders natural join employee natural join inventory where order_number = {}'.format(orderNum))
-	return orderInfo.as_dict()
-
-
-@app.route('/inventory')
-def inventory():
-	return render_template('Inventory.html', invList=getInvList())
-def getInvList():
-	data = db.query('select * from inventory natural join supplied_by natural join vendor')
-	return data.as_dict()
-@app.route('/inventory', methods=['POST'])
-def vendDetails():
-	vendID = request.form.get('vendorID')
-	return render_template('Inventory.html', invList=getInvList(), vendor=getVendDetails(vendID))
-def getVendDetails(vendID):
-	data = db.query('select * from vendor where vendor_id = {}'.format(vendID))
-	return data.as_dict()
-
+def add_manager(employee_id):
+    db.query('INSERT INTO manager VALUES ({})'.format(employee_id))
+    return
