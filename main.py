@@ -239,3 +239,47 @@ def add_server(employee_id):
 def add_manager(employee_id):
     db.query('INSERT INTO manager VALUES ({})'.format(employee_id))
     return
+
+@app.route('/pay')
+def wages():
+	return render_template('pay.html');
+
+@app.route('/pay', methods=['POST'])	
+def getWages():	
+	empID = request.form.get('idField')
+	startDate = request.form.get('startDate')
+	endDate = request.form.get('endDate')
+	wage = fetchWages(empID, startDate, endDate)
+	hour = fetchHours(empID, startDate, endDate)
+	tip = fetchTips(empID, startDate, endDate)
+	order = fetchOrders(empID, startDate, endDate)
+	if wage and hour:	
+		if order:
+			return render_template('pay.html', wages = wage[0]['pay'], hours = hour[0]['hours'], tips = tip[0]['tip_total'], orders = order[0]['order_count']);
+		else:
+			return render_template('pay.html', wages = wage[0]['pay'], hours = hour[0]['hours']);
+	else:
+		return render_template('pay.html', error=True);
+
+def fetchWages(empID, startDate, endDate):
+	data = db.query('select time_to_sec(hours) * hourly_pay/(3600) as "pay" from (select employee_id, sec_to_time( sum(time_to_sec(shift_hours))) as "hours" from (select employee_id, timediff(end_time, start_time) as "shift_hours" from shift where employee_id = {} and shift_date <= "{}" and shift_date >= "{}") as t1) as t2 natural join employee'.format(empID, endDate, startDate))
+	return data.as_dict()
+
+def fetchHours(empID, startDate, endDate):
+	data = db.query('select sec_to_time( sum(time_to_sec(shift_hours))) as "hours" from (select timediff(end_time, start_time) as "shift_hours" from shift where employee_id = {} and shift_date <= "{}" and shift_date >= "{}") as t1'.format(empID, endDate, startDate))
+	return data.as_dict()
+
+def fetchTips(empID, startDate, endDate):
+	data = db.query('select sum(tip) as "tip_total" from (select * from ticket where employee_id = {} and date(transaction_datetime) <= "{}" and date(transaction_datetime) >= "{}") as t1'.format(empID, endDate, startDate))
+	return data.as_dict()
+
+def fetchOrders(empID, startDate, endDate):
+	data = db.query('select count(*) as "order_count" from ticket where employee_id = "{}" and date(transaction_datetime) <= "{}" and date(transaction_datetime) >= "{}"'.format(empID, endDate, startDate))
+	return data.as_dict()
+
+
+
+
+
+
+
