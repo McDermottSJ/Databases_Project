@@ -1,0 +1,41 @@
+{% extends "index.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+{{ super() }}
+<style type="text/css">
+    .important { color: #336699; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="outline">
+        <h1>Employee wages</h1>
+        <form action="{{  url_for('getWages') }}", method="post">
+            <label>Employee ID</label>
+            <input type="number" class="form-control" name="idField">
+            Enter a date after 2010-01-01:
+            <input type="date" name="startDate" min="2010-01-01"><br>
+            Enter a date before today:
+            <input type="date" name="endDate"><br>
+            <button type="submit" class="btn btn-primary">Send </button>
+        </form>
+
+
+        {% if wages %}
+        <div class="container">
+            <h3>Wages: {{ wages }}</h3>
+            <h3>Hours: {{ hours }}</h3>
+        </div>
+        {% endif %}
+
+        {% if tips %}
+        <div class="container">
+            <h3>Orders: {{ orders }}</h3>
+            <h3>Tips: {{ tips }}</h3>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

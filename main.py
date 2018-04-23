@@ -201,6 +201,68 @@ def get_all_employee_ids():
     employee_ids = db.query('SELECT employee_id FROM employee')
     return employee_ids.as_dict()
 
+
+@app.route('/menu')
+def menu():
+	return render_template('menu.html', data=getMenuItems())
+def getMenuItems():
+	data = db.query('select * from menu_items')
+	return data.as_dict()
+@app.route('/menu/sub', methods=['POST'])
+def subItem():
+	itemName = request.form.get('nameSubField')
+	itemPrice = request.form.get('priceSubField')
+	
+	if itemName and itemPrice: 
+		check = db.query('select * from menu_items where item_name = "{}"'.format(itemName))	
+		if not check.as_dict():		
+			db.query('insert into menu_items values ("{}", {})'.format(itemName, itemPrice))
+			return render_template('menu.html', data=getMenuItems())
+		else:
+			return render_template('menu.html', data=getMenuItems(), error=True)
+	else:
+		return render_template('menu.html', data=getMenuItems(), error=True)
+
+@app.route('/menu/del', methods=['POST'])
+def delItem():
+	itemName= request.form.get('nameDelField')
+	db.query('delete from menu_items where item_name = "{}"'.format(itemName))
+	return render_template('menu.html', data=getMenuItems())
+
+
+@app.route('/orders')
+def orders():
+	return render_template('orders.html', orderList=getOrders())
+def getOrders():
+	orderList=db.query('select distinct last_name, order_number from orders natural join employee')
+	return orderList.as_dict()
+@app.route('/orders', methods=['POST'])
+def orderDetails():
+	orderNum = request.form.get('orderNum')
+	managerNameQ = db.query('select last_name from orders natural join employee where order_number = {}'.format(orderNum)).as_dict()
+	if managerNameQ:	
+		return render_template('orders.html', orderList=getOrders(), orderInfo=getOrderDetails(orderNum), orderID= orderNum, managerName= managerNameQ[0]['last_name'])
+	else:
+		return render_template('orders.html', orderList=getOrders())
+def getOrderDetails(orderNum):
+	orderInfo = db.query('select stock_name, reorder_id from orders natural join employee natural join inventory where order_number = {}'.format(orderNum))
+	return orderInfo.as_dict()
+
+
+@app.route('/inventory')
+def inventory():
+	return render_template('Inventory.html', invList=getInvList())
+def getInvList():
+	data = db.query('select * from inventory natural join supplied_by natural join vendor')
+	return data.as_dict()
+@app.route('/inventory', methods=['POST'])
+def vendDetails():
+	vendID = request.form.get('vendorID')
+	return render_template('Inventory.html', invList=getInvList(), vendor=getVendDetails(vendID))
+def getVendDetails(vendID):
+	data = db.query('select * from vendor where vendor_id = {}'.format(vendID))
+	return data.as_dict()
+
 def add_employee(employee_id, first_name, last_name, pay, phone):
     all_ids = get_all_employee_ids()
     db.query('INSERT INTO employee (employee_id, first_name, last_name, start_date, phone, hourly_pay) VALUES ({}, "{}", "{}", sysdate(), {}, "{}")'.format(employee_id, first_name, last_name, pay, phone)) 
@@ -210,10 +272,12 @@ def add_server(employee_id):
     db.query('INSERT INTO server VALUES ({})'.format(employee_id))
     return
 
+
 def add_manager(employee_id):
     db.query('INSERT INTO manager VALUES ({})'.format(employee_id))
     return
 
+<<<<<<< HEAD
 def find_morning_shifts(date):
     shifts = db.query('SELECT last_name, start_time, end_time  FROM shift NATURAL JOIN employee WHERE start_time = "08:00:00" AND shift_date = "{}"'.format(date))
     return shifts.as_dict() 
@@ -228,3 +292,48 @@ def insert_shift(employee_id, date, shift):
     elif shift == 'evening':
         db.query('INSERT INTO shift VALUES ({}, "16:00:00", "22:00:00", "{}")'.format(employee_id, date))
     return
+=======
+@app.route('/pay')
+def wages():
+	return render_template('pay.html');
+
+@app.route('/pay', methods=['POST'])	
+def getWages():	
+	empID = request.form.get('idField')
+	startDate = request.form.get('startDate')
+	endDate = request.form.get('endDate')
+	wage = fetchWages(empID, startDate, endDate)
+	hour = fetchHours(empID, startDate, endDate)
+	tip = fetchTips(empID, startDate, endDate)
+	order = fetchOrders(empID, startDate, endDate)
+	if wage and hour:	
+		if order:
+			return render_template('pay.html', wages = wage[0]['pay'], hours = hour[0]['hours'], tips = tip[0]['tip_total'], orders = order[0]['order_count']);
+		else:
+			return render_template('pay.html', wages = wage[0]['pay'], hours = hour[0]['hours']);
+	else:
+		return render_template('pay.html', error=True);
+
+def fetchWages(empID, startDate, endDate):
+	data = db.query('select time_to_sec(hours) * hourly_pay/(3600) as "pay" from (select employee_id, sec_to_time( sum(time_to_sec(shift_hours))) as "hours" from (select employee_id, timediff(end_time, start_time) as "shift_hours" from shift where employee_id = {} and shift_date <= "{}" and shift_date >= "{}") as t1) as t2 natural join employee'.format(empID, endDate, startDate))
+	return data.as_dict()
+
+def fetchHours(empID, startDate, endDate):
+	data = db.query('select sec_to_time( sum(time_to_sec(shift_hours))) as "hours" from (select timediff(end_time, start_time) as "shift_hours" from shift where employee_id = {} and shift_date <= "{}" and shift_date >= "{}") as t1'.format(empID, endDate, startDate))
+	return data.as_dict()
+
+def fetchTips(empID, startDate, endDate):
+	data = db.query('select sum(tip) as "tip_total" from (select * from ticket where employee_id = {} and date(transaction_datetime) <= "{}" and date(transaction_datetime) >= "{}") as t1'.format(empID, endDate, startDate))
+	return data.as_dict()
+
+def fetchOrders(empID, startDate, endDate):
+	data = db.query('select count(*) as "order_count" from ticket where employee_id = "{}" and date(transaction_datetime) <= "{}" and date(transaction_datetime) >= "{}"'.format(empID, endDate, startDate))
+	return data.as_dict()
+
+
+
+
+
+
+
+>>>>>>> f6f1d0a59a46cb9456ff905db812a63c568d7589
