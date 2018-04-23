@@ -9,9 +9,6 @@ db = records.Database('mysql://admin:FlaskTask2018@aa1t78pyyq2oz9v.c4pbzdfasekc.
 
 @app.route('/')
 def home():
-    rows = db.query('select * from test')
-    for r in rows:
-            print(r.one, r.two)
     return redirect('/sales')
    
 @app.route('/sales', methods=['GET', 'POST'])
