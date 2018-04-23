@@ -277,7 +277,6 @@ def add_manager(employee_id):
     db.query('INSERT INTO manager VALUES ({})'.format(employee_id))
     return
 
-<<<<<<< HEAD
 def find_morning_shifts(date):
     shifts = db.query('SELECT last_name, start_time, end_time  FROM shift NATURAL JOIN employee WHERE start_time = "08:00:00" AND shift_date = "{}"'.format(date))
     return shifts.as_dict() 
@@ -292,7 +291,7 @@ def insert_shift(employee_id, date, shift):
     elif shift == 'evening':
         db.query('INSERT INTO shift VALUES ({}, "16:00:00", "22:00:00", "{}")'.format(employee_id, date))
     return
-=======
+
 @app.route('/pay')
 def wages():
 	return render_template('pay.html');
@@ -330,10 +329,3 @@ def fetchOrders(empID, startDate, endDate):
 	data = db.query('select count(*) as "order_count" from ticket where employee_id = "{}" and date(transaction_datetime) <= "{}" and date(transaction_datetime) >= "{}"'.format(empID, endDate, startDate))
 	return data.as_dict()
 
-
-
-
-
-
-
->>>>>>> f6f1d0a59a46cb9456ff905db812a63c568d7589
