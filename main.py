@@ -66,10 +66,14 @@ def shifts():
 def add_shift():
     if request.method == 'POST':
         employee_id = request.form.get('employeeId')
-        date = request.form.get('date')
-        shift = request.form.get('shift')
-        insert_shift(employee_id, date, shift)
-        return redirect('shifts')
+        if is_employee(employee_id):
+            print("I guess it is an employee_id after all " + employee_id)
+            date = request.form.get('date')
+            shift = request.form.get('shift')
+            insert_shift(employee_id, date, shift)
+            return redirect('shifts')
+        else:
+            return render_template('shifts.html', shift=True)
     else:
         return redirect('shifts')
 
@@ -162,6 +166,7 @@ def get_employee_by_id(employee_id):
     return employee.as_dict()
 
 def is_employee(employee_id):
+    employee = get_employee_by_id(employee_id)
     if employee:
         return True
     else:
