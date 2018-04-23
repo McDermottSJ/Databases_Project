@@ -154,9 +154,14 @@ def getMenuItems():
 def subItem():
 	itemName = request.form.get('nameSubField')
 	itemPrice = request.form.get('priceSubField')
+	
 	if itemName and itemPrice: 
-		db.query('insert into menu_items values ("{}", {})'.format(itemName, itemPrice))
-		return render_template('menu.html', data=getMenuItems())
+		check = db.query('select * from menu_items where item_name = "{}"'.format(itemName))	
+		if not check.as_dict():		
+			db.query('insert into menu_items values ("{}", {})'.format(itemName, itemPrice))
+			return render_template('menu.html', data=getMenuItems())
+		else:
+			return render_template('menu.html', data=getMenuItems(), error=True)
 	else:
 		return render_template('menu.html', data=getMenuItems(), error=True)
 
