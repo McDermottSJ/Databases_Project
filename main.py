@@ -61,6 +61,43 @@ def search():
         else:
             return render_template('sales.html', error=True)
 
+@app.route('/shifts')
+def shifts():
+    return render_template('shifts.html')
+
+@app.route('/add_shift', methods=['POST'])
+def add_shift():
+    if request.method == 'POST':
+        employee_id = request.form.get('employeeId')
+        date = request.form.get('date')
+        shift = request.form.get('shift')
+        insert_shift(employee_id, date, shift)
+        return redirect('shifts')
+    else:
+        return redirect('shifts')
+
+@app.route('/lookup_shift', methods=['POST'])
+def lookup_shift():
+    if request.method == 'POST':
+        date = request.form.get('date')
+        shifts = request.form.get('shift')
+        print('Shifts: {}'.format(shifts))
+        if shifts == 'both':
+            morning_shifts = find_morning_shifts(date)
+            evening_shifts = find_evening_shifts(date)
+            print('Morning Shifts: {}'.format(morning_shifts))
+            print('Evening Shifts: {}'.format(evening_shifts))
+            return render_template('shifts.html', morning=morning_shifts, evening=evening_shifts, date=date)
+        elif shifts == 'morning':
+            morning_shifts = find_morning_shifts(date)
+            print('Morning Shifts: {}'.format(morning_shifts))
+            return render_template('shifts.html', morning=morning_shifts, date=date)
+        elif shifts == 'evening':
+            evening_shifts = find_evening_shifts(date)
+            print('Evening Shifts: {}'.format(evening_shifts))
+            return render_template('shifts.html', evening=evening_shifts, date=date)
+    return render_template('shifts.html', lookup=True)
+
 @app.route('/hire', methods=['POST'])
 def hire():
     if request.method == 'POST':
@@ -175,4 +212,19 @@ def add_server(employee_id):
 
 def add_manager(employee_id):
     db.query('INSERT INTO manager VALUES ({})'.format(employee_id))
+    return
+
+def find_morning_shifts(date):
+    shifts = db.query('SELECT last_name, start_time, end_time  FROM shift NATURAL JOIN employee WHERE start_time = "08:00:00" AND shift_date = "{}"'.format(date))
+    return shifts.as_dict() 
+
+def find_evening_shifts(date):
+    shifts = db.query('SELECT last_name, start_time, end_time  FROM shift NATURAL JOIN employee WHERE start_time = "16:00:00" AND shift_date = "{}"'.format(date))
+    return shifts.as_dict() 
+
+def insert_shift(employee_id, date, shift):
+    if shift == 'morning':
+        db.query('INSERT INTO shift VALUES ({}, "08:00:00", "16:00:00", "{}")'.format(employee_id, date))
+    elif shift == 'evening':
+        db.query('INSERT INTO shift VALUES ({}, "16:00:00", "22:00:00", "{}")'.format(employee_id, date))
     return
