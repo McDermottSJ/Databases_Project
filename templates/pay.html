@@ -9,32 +9,31 @@
 {% block content %}
 <div class="container">
     <div class="outline">
-        <h1>Inventory</h1>
-        <table class="table">
-            <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Item Name</th>
-                <th scope="col">Reorder Number</th>
-                <th scope="col">Price per Unit</th>
-                <th scope="col">Current Inventory</th>
-                <th scope="col">Vendor</th>
-                <th scope="col">Vendor ID</th>
-            </tr>
-            </thead>
-            {% for item in invList %}
-            <tr>
-                <th scope="row">{{ loop.index }}</th>
-                <td class="name">{{ item.stock_name}}</td>
-                <td class="id">{{ item.reorder_id}}</td>
-                <td class="price">{{ item.price_per_unit}}</td>
-                <td class="count">{{ item.unit_count}}</td>
-                <td class="vendor">{{ item.vendor_name}}</td>
-                <td class="vendorID">{{ item.vendor_id}}</td>
+        <h1>Employee wages</h1>
+        <form action="{{  url_for('getWages') }}", method="post">
+            <label>Employee ID</label>
+            <input type="number" class="form-control" name="idField">
+            Enter a date after 2010-01-01:
+            <input type="date" name="startDate" min="2010-01-01"><br>
+            Enter a date before today:
+            <input type="date" name="endDate"><br>
+            <button type="submit" class="btn btn-primary">Send </button>
+        </form>
 
-                {% endfor %}
-        </table>
 
+        {% if wages %}
+        <div class="container">
+            <h3>Wages: {{ wages }}</h3>
+            <h3>Hours: {{ hours }}</h3>
+        </div>
+        {% endif %}
+
+        {% if tips %}
+        <div class="container">
+            <h3>Orders: {{ orders }}</h3>
+            <h3>Tips: {{ tips }}</h3>
+        </div>
+        {% endif %}
 
     </div>
 </div>
